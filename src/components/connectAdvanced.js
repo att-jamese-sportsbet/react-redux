@@ -354,14 +354,6 @@ export default function connectAdvanced(
           }
         }
 
-        // Actually subscribe to the nearest connected ancestor (or store)
-        subscription.onStateChange = checkForUpdates
-        subscription.trySubscribe()
-
-        // Pull data from the store after first render in case the store has
-        // changed since we began.
-        checkForUpdates()
-
         const unsubscribeWrapper = () => {
           didUnsubscribe = true
           subscription.tryUnsubscribe()
@@ -377,8 +369,23 @@ export default function connectAdvanced(
           }
         }
 
+        // Actually subscribe to the nearest connected ancestor (or store)
+        subscription.onStateChange = checkForUpdates
+
+        if (!lastWrapperProps.isDisconnected && wrapperProps.isDisconnected) {
+          // used to be connected but not anymore, unsubscribe
+          unsubscribeWrapper()
+        } else if (!wrapperProps.isDisconnected) {
+          // need to subscribe
+          subscription.trySubscribe()
+
+          // Pull data from the store after first render in case the store has
+          // changed since we began.
+          checkForUpdates()
+        }
+
         return unsubscribeWrapper
-      }, [store, subscription, childPropsSelector])
+      }, [store, subscription, childPropsSelector, wrapperProps.isDisconnected])
 
       // Now that all that's done, we can finally try to actually render the child component.
       // We memoize the elements for the rendered child component as an optimization.
