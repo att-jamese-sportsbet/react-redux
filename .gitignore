@@ -1,8 +1,5 @@
 node_modules
-dist
-lib
 coverage
-es
 
 lib/core/metadata.js
 lib/core/MetadataBlog.js
